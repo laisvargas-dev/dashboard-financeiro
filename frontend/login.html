@@ -2,66 +2,233 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-    <title>Login | Meu Financeiro</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Entrar | Meu Financeiro</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Great+Vibes&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
 </head>
+
 <body class="login-page">
 
-    <main class="login-card">
-        <div class="login-logo">✦</div>
+  <main class="login-layout">
 
-        <h1>Meu Financeiro</h1>
-        <p>Organize suas finanças com estilo.</p>
+    <!-- LADO ESQUERDO -->
+    <section class="login-visual">
 
-        <form id="loginForm">
-            <label for="email">E-mail</label>
-            <input
-                type="email"
-                id="email"
-                placeholder="Seu e-mail"
-                required
-            >
+      <div class="login-brand">
+        <span class="brand-icon">✦</span>
+        <span>meu<strong>financeiro</strong></span>
+      </div>
 
-            <label for="senha">Senha</label>
-            <input
-                type="password"
-                id="senha"
-                placeholder="Sua senha"
-                required
-            >
+      <div class="login-visual-content">
 
-            <button type="submit">
-                Entrar na minha conta
-            </button>
-        </form>
+        <div class="eyebrow">
+          SEU DINHEIRO, SEU FUTURO ✦
+        </div>
 
-        <p id="mensagem" role="alert"></p>
+        <h1>
+          Organize hoje.<br>
+          Conquiste <em>amanhã.</em>
+        </h1>
 
-        <p class="login-footer">
-            Ainda não tem uma conta?
-            <a href="#" id="mostrarCadastro">
-                Cadastre-se
-            </a>
+        <p>
+          Tenha controle das suas finanças,
+          acompanhe seus sonhos e transforme
+          seus objetivos em conquistas.
         </p>
 
-        <form id="cadastroForm" hidden>
-            <label for="nomeCadastro">Nome</label>
-            <input id="nomeCadastro" required>
+        <div class="login-preview">
+          <div class="preview-top">
+            <span>Seu crescimento financeiro</span>
+            <span>↗</span>
+          </div>
 
-            <label for="emailCadastro">E-mail</label>
-            <input id="emailCadastro" type="email" required>
+          <div class="preview-value">
+            Sua melhor versão começa aqui.
+          </div>
 
-            <label for="senhaCadastro">Senha</label>
-            <input id="senhaCadastro"
-                   type="password" minlength="8" required>
+          <div class="preview-bars">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </div>
 
-            <button type="submit">Criar conta</button>
+      </div>
+
+      <div class="login-decor decor-one"></div>
+      <div class="login-decor decor-two"></div>
+
+    </section>
+
+    <!-- LADO DIREITO -->
+    <section class="login-form-side">
+
+      <div class="login-card">
+
+        <div class="login-icon">✦</div>
+
+        <div class="eyebrow">
+          BEM-VINDA DE VOLTA
+        </div>
+
+        <h2>Entre na sua conta</h2>
+
+        <p class="login-description">
+          Seu espaço para cuidar do que importa.
+        </p>
+
+        <div
+          id="mensagem"
+          class="login-message"
+          role="status"
+          hidden>
+        </div>
+
+        <!-- FORMULÁRIO DE LOGIN -->
+        <form id="loginForm">
+
+          <label for="email">E-mail</label>
+
+          <input
+            type="email"
+            id="email"
+            autocomplete="email"
+            placeholder="seuemail@exemplo.com"
+            required
+          >
+
+          <label for="senha">Senha</label>
+
+          <div class="password-wrap">
+            <input
+              type="password"
+              id="senha"
+              autocomplete="current-password"
+              placeholder="Digite sua senha"
+              required
+            >
+
+            <button
+              type="button"
+              class="toggle-password"
+              data-target="senha"
+              aria-label="Mostrar senha">
+              ◉
+            </button>
+          </div>
+
+          <button
+            type="submit"
+            class="btn primary login-submit">
+            Entrar na minha conta →
+          </button>
+
+          <p class="switch-form">
+            Ainda não tem uma conta?
+            <a href="#" id="mostrarCadastro">
+              Cadastre-se
+            </a>
+          </p>
+
         </form>
-    </main>
 
-    <script src="script.js"></script>
+        <!-- FORMULÁRIO DE CADASTRO -->
+        <form id="cadastroForm" hidden>
+
+          <label for="nomeCadastro">
+            Nome completo
+          </label>
+
+          <input
+            type="text"
+            id="nomeCadastro"
+            autocomplete="name"
+            placeholder="Seu nome"
+            required
+          >
+
+          <label for="emailCadastro">
+            E-mail
+          </label>
+
+          <input
+            type="email"
+            id="emailCadastro"
+            autocomplete="email"
+            placeholder="seuemail@exemplo.com"
+            required
+          >
+
+          <label for="senhaCadastro">
+            Senha
+          </label>
+
+          <div class="password-wrap">
+
+            <input
+              type="password"
+              id="senhaCadastro"
+              autocomplete="new-password"
+              minlength="6"
+              placeholder="Crie uma senha"
+              required
+            >
+
+            <button
+              type="button"
+              class="toggle-password"
+              data-target="senhaCadastro"
+              aria-label="Mostrar senha">
+              ◉
+            </button>
+
+          </div>
+
+          <button
+            type="submit"
+            class="btn primary login-submit">
+            Criar minha conta →
+          </button>
+
+          <p class="switch-form">
+            Já tem uma conta?
+            <a href="#" id="mostrarLogin">
+              Fazer login
+            </a>
+          </p>
+
+        </form>
+
+      </div>
+
+      <!-- ASSINATURA DA DESENVOLVEDORA -->
+      <footer class="login-signature">
+        <span>Desenvolvido por</span>
+
+        <strong class="assinatura-lais">
+          Lais Vargas
+        </strong>
+
+        <small>© 2026</small>
+      </footer>
+
+    </section>
+
+  </main>
+
 </body>
 </html>

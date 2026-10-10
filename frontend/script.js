@@ -1,525 +1,623 @@
 
 const API = "/api";
+const $ = (id) => document.getElementById(id);
+const moeda = (v) => new Intl.NumberFormat("pt-BR", {
+  style: "currency", currency: "BRL"
+}).format(Number(v) || 0);
 
-const loginForm = document.getElementById("loginForm");
-const cadastroForm = document.getElementById("cadastroForm");
-const mensagem = document.getElementById("mensagem");
-
-function mostrarMensagem(texto) {
-    if (mensagem) mensagem.textContent = texto;
+function dataHoje() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 }
-
-if (loginForm) {
-    loginForm.addEventListener("submit", async (event) => {
-        event.preventDefault();
-
-        const email = document.getElementById("email").value;
-        const senha = document.getElementById("senha").value;
-
-        try {
-            const resposta = await fetch(`${API}/auth/login`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ email, senha })
-            });
-
-            const dados = await resposta.json();
-
-            if (!resposta.ok) {
-                throw new Error(dados.erro || "Erro no login.");
-            }
-
-            sessionStorage.setItem("token", dados.token);
-            sessionStorage.setItem(
-                "usuario",
-                JSON.stringify(dados.usuario)
-            );
-
-            window.location.href = "index.html";
-
-        } catch (erro) {
-            mostrarMensagem(erro.message);
-        }
-    });
+function dataFormatada(valor) {
+  if (!valor) return "—";
+  const parte = String(valor).slice(0,10);
+  const [ano, mes, dia] = parte.split("-");
+  return `${dia}/${mes}/${ano}`;
 }
-
-document.getElementById("mostrarCadastro")
-    ?.addEventListener("click", (event) => {
-        event.preventDefault();
-        cadastroForm.hidden = false;
-    });
-
-if (cadastroForm) {
-    cadastroForm.addEventListener("submit", async (event) => {
-        event.preventDefault();
-
-        const nome = document.getElementById(
-            "nomeCadastro"
-        ).value;
-
-        const email = document.getElementById(
-            "emailCadastro"
-        ).value;
-
-        const senha = document.getElementById(
-            "senhaCadastro"
-        ).value;
-
-        try {
-            const resposta = await fetch(
-                `${API}/auth/cadastro`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        nome,
-                        email,
-                        senha
-                    })
-                }
-            );
-
-            const dados = await resposta.json();
-
-            if (!resposta.ok) {
-                throw new Error(
-                    dados.erro || "Erro no cadastro."
-                );
-            }
-
-            mostrarMensagem(
-                "Conta criada! Agora faça login."
-            );
-
-            cadastroForm.hidden = true;
-
-        } catch (erro) {
-            mostrarMensagem(erro.message);
-        }
-    });
+function avisar(texto, erro = false) {
+  const el = $("aviso") || $("mensagem");
+  if (!el) return;
+  el.textContent = texto;
+  el.hidden = !texto;
+  el.style.color = erro ? "#b42355" : "#137d60";
 }
-
-
-
-/* DASHBOARD FINANCEIRO */
-
-const tokenDashboard = sessionStorage.getItem("token");
-
-const moeda = (valor) =>
-    new Intl.NumberFormat("pt-BR", {
-        style: "currency",
-        currency: "BRL"
-    }).format(Number(valor) || 0);
-
-const hojeLocal = () => {
-    const data = new Date();
-    const ano = data.getFullYear();
-    const mes = String(data.getMonth() + 1).padStart(2, "0");
-    const dia = String(data.getDate()).padStart(2, "0");
-    return `${ano}-${mes}-${dia}`;
-};
-
-async function requisicaoFinanceira(rota, opcoes = {}) {
-    const resposta = await fetch(`${API}${rota}`, {
-        ...opcoes,
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${tokenDashboard}`,
-            ...opcoes.headers
-        }
-    });
-
-    if (resposta.status === 401) {
-        sessionStorage.removeItem("token");
-        sessionStorage.removeItem("usuario");
-        window.location.replace("login.html");
-        throw new Error("Sessão expirada.");
+function erroTexto(d) {
+  return d?.erro || d?.mensagem || "Não foi possível concluir a operação.";
+}
+async function api(rota, opcoes = {}) {
+  const token = sessionStorage.getItem("token");
+  const resposta = await fetch(API + rota, {
+    ...opcoes,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+      ...opcoes.headers
     }
-
-    const dados = await resposta.json();
-
-    if (!resposta.ok) {
-        throw new Error(dados.erro || "Erro na requisição.");
-    }
-
-    return dados;
+  });
+  if (resposta.status === 401) {
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("usuario");
+    location.replace("login.html");
+    throw new Error("Sua sessão expirou.");
+  }
+  const dados = await resposta.json().catch(() => ({}));
+  if (!resposta.ok) throw new Error(erroTexto(dados));
+  return dados;
 }
 
-const painel = document.querySelector(".dashboard-page");
+/* LOGIN E CADASTRO */
+if ($("loginForm")) {
+  const login = $("loginForm");
+  const cadastro = $("cadastroForm");
 
-if (painel) {
-    if (!tokenDashboard) {
-        window.location.replace("login.html");
-    } else {
-        iniciarDashboard();
+  $("mostrarCadastro")?.addEventListener("click", e => {
+    e.preventDefault();
+    login.hidden = true;
+    cadastro.hidden = false;
+    avisar("");
+  });
+  $("mostrarLogin")?.addEventListener("click", e => {
+    e.preventDefault();
+    cadastro.hidden = true;
+    login.hidden = false;
+    avisar("");
+  });
+
+  document.querySelectorAll(".toggle-password").forEach(botao => {
+    botao.addEventListener("click", () => {
+      const campo = $(botao.dataset.target);
+      if (!campo) return;
+      campo.type = campo.type === "password" ? "text" : "password";
+      botao.setAttribute("aria-label",
+        campo.type === "password" ? "Mostrar senha" : "Ocultar senha");
+    });
+  });
+
+  login.addEventListener("submit", async e => {
+    e.preventDefault();
+    const botao = login.querySelector('[type="submit"]');
+    botao.disabled = true;
+    try {
+      const resposta = await fetch(`${API}/auth/login`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+          email: $("email").value.trim(),
+          senha: $("senha").value
+        })
+      });
+      const dados = await resposta.json();
+      if (!resposta.ok) throw new Error(erroTexto(dados));
+      if (!dados.token) throw new Error("O servidor não retornou um token.");
+      sessionStorage.setItem("token", dados.token);
+      sessionStorage.setItem("usuario", JSON.stringify(dados.usuario || {}));
+      location.href = "index.html";
+    } catch (erro) {
+      avisar(erro.message, true);
+    } finally {
+      botao.disabled = false;
     }
+  });
+
+  cadastro?.addEventListener("submit", async e => {
+    e.preventDefault();
+    const botao = cadastro.querySelector('[type="submit"]');
+    botao.disabled = true;
+    try {
+      const resposta = await fetch(`${API}/auth/cadastro`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+          nome: $("nomeCadastro").value.trim(),
+          email: $("emailCadastro").value.trim(),
+          senha: $("senhaCadastro").value
+        })
+      });
+      const dados = await resposta.json();
+      if (!resposta.ok) throw new Error(erroTexto(dados));
+      cadastro.reset();
+      cadastro.hidden = true;
+      login.hidden = false;
+      avisar("Conta criada! Agora entre com seu e-mail e senha.");
+    } catch (erro) {
+      avisar(erro.message, true);
+    } finally {
+      botao.disabled = false;
+    }
+  });
 }
 
+/* DASHBOARD */
+let transacoes = [];
+let metas = [];
+let dadosGrafico = [];
+let saldoTotal = 0;
 let graficoLinha = null;
 let graficoRosca = null;
+let idEdicao = null;
 
-function erroPainel(mensagem) {
-    document.getElementById("erroDashboard").textContent =
-        mensagem;
+if (document.body.classList.contains("app-page")) {
+  if (!sessionStorage.getItem("token")) {
+    location.replace("login.html");
+  } else {
+    iniciarDashboard();
+  }
 }
 
-async function iniciarDashboard() {
-    const usuario = JSON.parse(
-        sessionStorage.getItem("usuario") || "{}"
-    );
+function navegar(pagina) {
+  document.querySelectorAll(".page-section").forEach(el => {
+    el.classList.toggle("active", el.id === pagina);
+  });
+  document.querySelectorAll(".nav-link").forEach(el => {
+    el.classList.toggle("active", el.dataset.page === pagina);
+  });
+  const titulos = {
+    visao: "Visão geral",
+    transacoes: "Transações",
+    metas: "Minhas metas",
+    relatorios: "Relatórios"
+  };
+  $("breadcrumb").textContent = titulos[pagina] || "Visão geral";
+  $("sidebar").classList.remove("open");
+}
 
-    document.getElementById("nomeUsuario").textContent =
-        usuario.nome || "usuário";
+function iniciarDashboard() {
+  let usuario = {};
+  try {
+    usuario = JSON.parse(sessionStorage.getItem("usuario") || "{}");
+  } catch {}
 
-    const seletorMes = document.getElementById("mesSelecionado");
-    seletorMes.value = hojeLocal().slice(0, 7);
+  const nome = usuario.nome || "usuária";
+  const primeiroNome = nome.split(" ")[0];
+  $("tituloPagina").textContent = `Olá, ${primeiroNome}! ✨`;
+  $("avatar").textContent = nome.split(" ").slice(0,2)
+    .map(p => p[0]?.toUpperCase()).join("") || "MF";
 
-    document.getElementById("dataTransacao").value =
-        hojeLocal();
+  $("dataHoje").textContent = new Date().toLocaleDateString("pt-BR", {
+    day: "2-digit", month: "long", year: "numeric"
+  });
+  $("mesSelecionado").value = dataHoje().slice(0,7);
+  $("dataTransacao").value = dataHoje();
 
-    document.getElementById("sair").onclick = () => {
-        sessionStorage.clear();
-        window.location.replace("login.html");
-    };
+  $("sair").onclick = () => {
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("usuario");
+    location.replace("login.html");
+  };
 
-    seletorMes.addEventListener("change", carregarDashboard);
+  $("menuToggle")?.addEventListener("click", () =>
+    $("sidebar").classList.toggle("open"));
 
-    const modal = document.getElementById("modalLancamento");
-
-    ["abrirLancamento", "novoLancamento"].forEach(id => {
-        document.getElementById(id).onclick = () =>
-            modal.showModal();
+  document.querySelectorAll("[data-page], [data-go]").forEach(el => {
+    el.addEventListener("click", e => {
+      e.preventDefault();
+      navegar(el.dataset.page || el.dataset.go);
     });
+  });
 
-    document.getElementById("cancelarLancamento").onclick =
-        () => modal.close();
+  $("mesSelecionado").addEventListener("change", renderizar);
+  $("buscaTransacao").addEventListener("input", renderizarTransacoes);
+  $("filtroTipo").addEventListener("change", renderizarTransacoes);
 
-    document.getElementById("formTransacao")
-        .addEventListener("submit", salvarTransacao);
+  $("abrirLancamento").onclick = abrirModal;
+  $("fecharModal").onclick = fecharModal;
+  $("cancelarLancamento").onclick = fecharModal;
+  $("formTransacao").addEventListener("submit", salvarTransacao);
+  $("formMeta").addEventListener("submit", salvarMeta);
 
-    document.getElementById("formMeta")
-        .addEventListener("submit", salvarMeta);
+  $("listaTransacoes").addEventListener("click", acaoTransacao);
+  $("listaMetas").addEventListener("click", acaoMeta);
 
-    document.getElementById("listaTransacoes")
-        .addEventListener("click", async (evento) => {
-            const botao = evento.target.closest("[data-excluir]");
-            if (!botao) return;
+  $("exportarCsv").onclick = () => exportarCSV(transacoesFiltradas());
+  $("baixarRelatorio").onclick = () => exportarCSV(transacoesDoMes());
+  $("imprimirRelatorio").onclick = () => {
+    navegar("relatorios");
+    window.print();
+  };
 
-            if (!confirm("Excluir esta movimentação?")) return;
-
-            try {
-                await requisicaoFinanceira(
-                    `/transacoes/${botao.dataset.excluir}`,
-                    { method: "DELETE" }
-                );
-                await carregarDashboard();
-            } catch (erro) {
-                erroPainel(erro.message);
-            }
-        });
-
-    document.getElementById("listaMetas")
-        .addEventListener("click", gerenciarMetas);
-
-    await carregarDashboard();
+  carregarDados();
 }
 
-async function carregarDashboard() {
-    erroPainel("");
+async function carregarDados() {
+  avisar("");
+  try {
+    const [resumo, lista, grafico, listaMetas] = await Promise.all([
+      api("/dashboard/resumo"),
+      api("/transacoes"),
+      api("/dashboard/grafico"),
+      api("/metas")
+    ]);
+    saldoTotal = Number(resumo.saldo) || 0;
+    transacoes = Array.isArray(lista) ? lista : [];
+    dadosGrafico = Array.isArray(grafico) ? grafico : [];
+    metas = Array.isArray(listaMetas) ? listaMetas : [];
+    renderizar();
+  } catch (erro) {
+    avisar(erro.message, true);
+  }
+}
 
+function transacoesDoMes() {
+  const mes = $("mesSelecionado").value;
+  return transacoes.filter(t => String(t.data).slice(0,7) === mes);
+}
+function transacoesFiltradas() {
+  const busca = $("buscaTransacao").value.toLowerCase();
+  const tipo = $("filtroTipo").value;
+  return transacoesDoMes().filter(t =>
+    (tipo === "todos" || t.tipo === tipo) &&
+    String(t.descricao || "").toLowerCase().includes(busca)
+  );
+}
+function totaisMes() {
+  const lista = transacoesDoMes();
+  const receitas = lista.filter(t => t.tipo === "receita")
+    .reduce((s,t) => s + Number(t.valor), 0);
+  const despesas = lista.filter(t => t.tipo === "despesa")
+    .reduce((s,t) => s + Number(t.valor), 0);
+  return {receitas, despesas, resultado: receitas - despesas};
+}
+
+function renderizar() {
+  const {receitas, despesas, resultado} = totaisMes();
+  $("saldo").textContent = moeda(saldoTotal);
+  $("receitas").textContent = moeda(receitas);
+  $("despesas").textContent = moeda(despesas);
+  $("lucro").textContent = moeda(resultado);
+  renderizarTransacoes();
+  renderizarRecentes();
+  renderizarMetas();
+  renderizarRelatorio();
+  desenharGraficos(receitas, despesas);
+}
+
+function renderizarTransacoes() {
+  const tbody = $("listaTransacoes");
+  tbody.replaceChildren();
+  const lista = transacoesFiltradas().sort((a,b) =>
+    String(b.data).localeCompare(String(a.data)));
+
+  if (!lista.length) {
+    const linha = tbody.insertRow();
+    const celula = linha.insertCell();
+    celula.colSpan = 5;
+    celula.className = "empty";
+    celula.textContent = "Nenhuma transação encontrada neste mês.";
+    return;
+  }
+
+  lista.forEach(t => {
+    const linha = tbody.insertRow();
+    linha.insertCell().textContent = t.descricao;
+    const tipo = linha.insertCell();
+    const selo = document.createElement("span");
+    selo.className = `type-pill ${t.tipo}`;
+    selo.textContent = t.tipo === "receita" ? "Receita" : "Despesa";
+    tipo.appendChild(selo);
+    linha.insertCell().textContent = moeda(t.valor);
+    linha.insertCell().textContent = dataFormatada(t.data);
+    const acoes = linha.insertCell();
+
+    const editar = document.createElement("button");
+    editar.textContent = "Editar";
+    editar.dataset.editar = t.id;
+
+    const excluir = document.createElement("button");
+    excluir.textContent = "Excluir";
+    excluir.dataset.excluir = t.id;
+    acoes.append(editar, excluir);
+  });
+}
+
+function renderizarRecentes() {
+  const area = $("ultimasTransacoes");
+  area.replaceChildren();
+  const lista = [...transacoesDoMes()]
+    .sort((a,b) => String(b.data).localeCompare(String(a.data)))
+    .slice(0,5);
+
+  if (!lista.length) {
+    area.innerHTML = '<p class="empty">Ainda não há movimentações neste mês.</p>';
+    return;
+  }
+
+  lista.forEach(t => {
+    const item = document.createElement("div");
+    item.className = "recent-item";
+
+    const icone = document.createElement("div");
+    icone.className = "recent-icon " + (t.tipo === "receita" ? "income" : "");
+    icone.textContent = t.tipo === "receita" ? "↗" : "↘";
+
+    const info = document.createElement("div");
+    info.className = "recent-info";
+    const titulo = document.createElement("strong");
+    titulo.textContent = t.descricao;
+    const data = document.createElement("small");
+    data.textContent = dataFormatada(t.data);
+    info.append(titulo, data);
+
+    const valor = document.createElement("span");
+    valor.className = "recent-value " +
+      (t.tipo === "receita" ? "income" : "outcome");
+    valor.textContent = (t.tipo === "receita" ? "+" : "−") + moeda(t.valor);
+    item.append(icone, info, valor);
+    area.appendChild(item);
+  });
+}
+
+function abrirModal(transacao = null) {
+  idEdicao = transacao?.id ?? null;
+  $("formTransacao").reset();
+  $("tituloModal").textContent = idEdicao ? "Editar transação" : "Nova transação";
+  $("descricao").value = transacao?.descricao || "";
+  $("tipo").value = transacao?.tipo || "receita";
+  $("valor").value = transacao?.valor || "";
+  $("dataTransacao").value = transacao
+    ? String(transacao.data).slice(0,10) : dataHoje();
+  $("modalLancamento").showModal();
+}
+function fecharModal() {
+  $("modalLancamento").close();
+  idEdicao = null;
+}
+
+async function salvarTransacao(e) {
+  e.preventDefault();
+  const dados = {
+    descricao: $("descricao").value.trim(),
+    tipo: $("tipo").value,
+    valor: Number($("valor").value),
+    data: $("dataTransacao").value
+  };
+  if (!dados.descricao || dados.valor <= 0 || !dados.data) {
+    avisar("Preencha os campos corretamente.", true);
+    return;
+  }
+
+  const botao = $("salvarLancamento");
+  botao.disabled = true;
+  try {
+    await api(idEdicao ? `/transacoes/${idEdicao}` : "/transacoes", {
+      method: idEdicao ? "PUT" : "POST",
+      body: JSON.stringify(dados)
+    });
+    fecharModal();
+    $("mesSelecionado").value = dados.data.slice(0,7);
+    await carregarDados();
+  } catch (erro) {
+    avisar(erro.message, true);
+  } finally {
+    botao.disabled = false;
+  }
+}
+
+async function acaoTransacao(e) {
+  const botao = e.target.closest("button");
+  if (!botao) return;
+
+  if (botao.dataset.editar) {
+    const t = transacoes.find(t =>
+      String(t.id) === botao.dataset.editar);
+    if (t) abrirModal(t);
+    return;
+  }
+  if (botao.dataset.excluir) {
+    if (!confirm("Deseja realmente excluir esta transação?")) return;
     try {
-        const [resumo, transacoes, grafico, metas] =
-            await Promise.all([
-                requisicaoFinanceira("/dashboard/resumo"),
-                requisicaoFinanceira("/transacoes"),
-                requisicaoFinanceira("/dashboard/grafico"),
-                requisicaoFinanceira("/metas")
-            ]);
-
-        const mes = document.getElementById(
-            "mesSelecionado"
-        ).value;
-
-        const transacoesMes = transacoes.filter(t =>
-            String(t.data).slice(0, 7) === mes
-        );
-
-        const receitasMes = transacoesMes
-            .filter(t => t.tipo === "receita")
-            .reduce((soma, t) => soma + Number(t.valor), 0);
-
-        const despesasMes = transacoesMes
-            .filter(t => t.tipo === "despesa")
-            .reduce((soma, t) => soma + Number(t.valor), 0);
-
-        document.getElementById("saldo").textContent =
-            moeda(resumo.saldo);
-
-        document.getElementById("receitas").textContent =
-            moeda(receitasMes);
-
-        document.getElementById("despesas").textContent =
-            moeda(despesasMes);
-
-        document.getElementById("lucro").textContent =
-            moeda(receitasMes - despesasMes);
-
-        mostrarTransacoes(transacoesMes);
-        mostrarMetas(metas);
-        desenharGraficos(grafico, receitasMes, despesasMes);
-
+      await api(`/transacoes/${botao.dataset.excluir}`, {method:"DELETE"});
+      await carregarDados();
     } catch (erro) {
-        erroPainel(erro.message);
+      avisar(erro.message, true);
     }
+  }
 }
 
-function mostrarTransacoes(transacoes) {
-    const tabela = document.getElementById("listaTransacoes");
-    tabela.replaceChildren();
+async function salvarMeta(e) {
+  e.preventDefault();
+  const dados = {
+    nome: $("nomeMeta").value.trim(),
+    valor_alvo: Number($("valorAlvo").value)
+  };
+  if (!dados.nome || dados.valor_alvo <= 0) {
+    avisar("Preencha a meta corretamente.", true);
+    return;
+  }
+  try {
+    await api("/metas", {
+      method:"POST",
+      body:JSON.stringify(dados)
+    });
+    $("formMeta").reset();
+    await carregarDados();
+  } catch (erro) {
+    avisar(erro.message, true);
+  }
+}
 
-    if (!transacoes.length) {
-        const linha = tabela.insertRow();
-        const celula = linha.insertCell();
-        celula.colSpan = 5;
-        celula.textContent = "Nenhuma movimentação neste mês.";
+function renderizarMetas() {
+  const area = $("listaMetas");
+  area.replaceChildren();
+  const primeira = metas[0];
+  $("nomeMetaDestaque").textContent =
+    primeira?.nome || "Crie sua primeira meta";
+  $("valorGuardado").textContent = moeda(primeira?.valor_atual);
+  $("valorMeta").textContent = "de " + moeda(primeira?.valor_alvo);
+  const percentual = primeira && Number(primeira.valor_alvo) > 0
+    ? Math.min(100, Math.max(0,
+        Number(primeira.valor_atual) / Number(primeira.valor_alvo) * 100))
+    : 0;
+  $("progressoMeta").style.width = percentual + "%";
+  $("percentualMeta").textContent = percentual.toFixed(0) + "% concluído";
+
+  if (!metas.length) {
+    area.innerHTML = '<p class="empty">Nenhuma meta cadastrada ainda.</p>';
+    return;
+  }
+
+  metas.forEach(meta => {
+    const item = document.createElement("article");
+    item.className = "goal-item";
+    const titulo = document.createElement("h3");
+    titulo.textContent = meta.nome;
+    const detalhe = document.createElement("p");
+    detalhe.textContent = `${moeda(meta.valor_atual)} de ${moeda(meta.valor_alvo)}`;
+
+    const barra = document.createElement("div");
+    barra.className = "progress";
+    const preenchimento = document.createElement("div");
+    const pct = Number(meta.valor_alvo) > 0
+      ? Math.min(100, Number(meta.valor_atual)/Number(meta.valor_alvo)*100) : 0;
+    preenchimento.style.width = Math.max(0,pct) + "%";
+    barra.appendChild(preenchimento);
+
+    const acoes = document.createElement("div");
+    acoes.className = "goal-actions";
+    const atualizar = document.createElement("button");
+    atualizar.textContent = "Atualizar valor";
+    atualizar.dataset.atualizarMeta = meta.id;
+    const excluir = document.createElement("button");
+    excluir.textContent = "Excluir";
+    excluir.dataset.excluirMeta = meta.id;
+    acoes.append(atualizar, excluir);
+    item.append(titulo, detalhe, barra, acoes);
+    area.appendChild(item);
+  });
+}
+
+async function acaoMeta(e) {
+  const botao = e.target.closest("button");
+  if (!botao) return;
+  try {
+    if (botao.dataset.excluirMeta) {
+      if (!confirm("Excluir esta meta?")) return;
+      await api(`/metas/${botao.dataset.excluirMeta}`, {method:"DELETE"});
+    } else if (botao.dataset.atualizarMeta) {
+      const entrada = prompt("Qual o valor TOTAL já guardado para esta meta?");
+      if (entrada === null) return;
+      const valor = Number(entrada.replace(",","."));
+      if (!Number.isFinite(valor) || valor < 0) {
+        avisar("Digite um valor válido.", true);
         return;
-    }
-
-    transacoes.forEach(t => {
-        const linha = tabela.insertRow();
-
-        const descricao = linha.insertCell();
-        descricao.textContent = t.descricao;
-
-        const tipo = linha.insertCell();
-        tipo.textContent = t.tipo === "receita"
-            ? "Receita" : "Despesa";
-        tipo.className = t.tipo;
-
-        const valor = linha.insertCell();
-        valor.textContent = moeda(t.valor);
-        valor.className = t.tipo;
-
-        const data = linha.insertCell();
-        const dataISO = String(t.data).slice(0, 10);
-        data.textContent = dataISO.split("-").reverse().join("/");
-
-        const acao = linha.insertCell();
-        const botao = document.createElement("button");
-        botao.textContent = "Excluir";
-        botao.dataset.excluir = t.id;
-        botao.className = "botao-secundario";
-        acao.appendChild(botao);
-    });
+      }
+      await api(`/metas/${botao.dataset.atualizarMeta}`, {
+        method:"PATCH",
+        body:JSON.stringify({valor_atual:valor})
+      });
+    } else return;
+    await carregarDados();
+  } catch (erro) {
+    avisar(erro.message, true);
+  }
 }
 
-async function salvarTransacao(evento) {
-    evento.preventDefault();
-
-    const dados = {
-        descricao: document.getElementById("descricao").value,
-        tipo: document.getElementById("tipo").value,
-        valor: Number(document.getElementById("valor").value),
-        data: document.getElementById("dataTransacao").value
-    };
-
-    try {
-        await requisicaoFinanceira("/transacoes", {
-            method: "POST",
-            body: JSON.stringify(dados)
-        });
-
-        evento.target.reset();
-        document.getElementById("modalLancamento").close();
-        document.getElementById("mesSelecionado").value =
-            dados.data.slice(0, 7);
-
-        await carregarDashboard();
-    } catch (erro) {
-        alert(erro.message);
-    }
+function renderizarRelatorio() {
+  const {receitas, despesas, resultado} = totaisMes();
+  const area = $("relatorioResumo");
+  area.replaceChildren();
+  [
+    ["Receitas", receitas],
+    ["Despesas", despesas],
+    ["Resultado", resultado]
+  ].forEach(([nome, valor]) => {
+    const card = document.createElement("div");
+    card.className = "report-stat";
+    const label = document.createElement("span");
+    label.textContent = nome;
+    const numero = document.createElement("strong");
+    numero.textContent = moeda(valor);
+    card.append(label, numero);
+    area.appendChild(card);
+  });
 }
 
-async function salvarMeta(evento) {
-    evento.preventDefault();
-
-    const dados = {
-        nome: document.getElementById("nomeMeta").value,
-        valor_alvo: Number(
-            document.getElementById("valorAlvo").value
-        )
-    };
-
-    try {
-        await requisicaoFinanceira("/metas", {
-            method: "POST",
-            body: JSON.stringify(dados)
-        });
-
-        evento.target.reset();
-        await carregarDashboard();
-    } catch (erro) {
-        erroPainel(erro.message);
-    }
+function exportarCSV(lista) {
+  const linhas = [
+    ["Descrição","Tipo","Valor","Data"],
+    ...lista.map(t => [
+      t.descricao, t.tipo, t.valor, String(t.data).slice(0,10)
+    ])
+  ];
+  const csv = linhas.map(linha => linha.map(v =>
+    `"${String(v ?? "").replace(/"/g,'""').replace(/^[=+\-@\t\r]/, "'$&')}"`
+  ).join(";")).join("\r\n");
+  const blob = new Blob(["\uFEFF",csv], {
+    type:"text/csv;charset=utf-8"
+  });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `financeiro-${$("mesSelecionado").value}.csv`;
+  link.click();
+  URL.revokeObjectURL(url);
 }
 
-function mostrarMetas(metas) {
-    const lista = document.getElementById("listaMetas");
-    lista.replaceChildren();
+function desenharGraficos(receitas, despesas) {
+  if (typeof Chart === "undefined") {
+    avisar("A biblioteca Chart.js não carregou. Confira sua internet.", true);
+    return;
+  }
+  graficoLinha?.destroy();
+  graficoRosca?.destroy();
 
-    const primeira = metas[0];
+  const meses = [...new Set(dadosGrafico.map(d => String(d.mes)))].sort();
+  const valores = tipo => meses.map(mes =>
+    dadosGrafico.filter(d => String(d.mes) === mes && d.tipo === tipo)
+      .reduce((s,d) => s + Number(d.total), 0)
+  );
 
-    document.getElementById("valorMeta").textContent =
-        primeira ? moeda(primeira.valor_alvo) : moeda(0);
-
-    const percentual = primeira
-        ? Math.min(100, Number(primeira.valor_atual) /
-            Number(primeira.valor_alvo) * 100)
-        : 0;
-
-    document.getElementById("progressoMeta").style.width =
-        `${percentual}%`;
-
-    document.getElementById("percentualMeta").textContent =
-        primeira
-            ? `${percentual.toFixed(0)}% da meta`
-            : "Nenhuma meta cadastrada";
-
-    metas.forEach(meta => {
-        const item = document.createElement("div");
-        item.className = "meta-item";
-
-        const titulo = document.createElement("strong");
-        titulo.textContent = meta.nome;
-
-        const detalhe = document.createElement("p");
-        detalhe.textContent =
-            `${moeda(meta.valor_atual)} de ${moeda(meta.valor_alvo)}`;
-
-        const adicionar = document.createElement("button");
-        adicionar.textContent = "Atualizar valor";
-        adicionar.dataset.atualizarMeta = meta.id;
-
-        const excluir = document.createElement("button");
-        excluir.textContent = "Excluir";
-        excluir.className = "botao-secundario";
-        excluir.dataset.excluirMeta = meta.id;
-
-        item.append(titulo, detalhe, adicionar, " ", excluir);
-        lista.appendChild(item);
-    });
-}
-
-async function gerenciarMetas(evento) {
-    const botao = evento.target.closest("button");
-    if (!botao) return;
-
-    try {
-        if (botao.dataset.excluirMeta) {
-            if (!confirm("Excluir esta meta?")) return;
-
-            await requisicaoFinanceira(
-                `/metas/${botao.dataset.excluirMeta}`,
-                { method: "DELETE" }
-            );
-        }
-
-        if (botao.dataset.atualizarMeta) {
-            const entrada = prompt(
-                "Qual é o valor total já guardado para esta meta?"
-            );
-
-            if (entrada === null) return;
-
-            const valor = Number(
-                entrada.replace(",", ".")
-            );
-
-            if (!Number.isFinite(valor) || valor < 0) {
-                alert("Informe um valor válido.");
-                return;
-            }
-
-            await requisicaoFinanceira(
-                `/metas/${botao.dataset.atualizarMeta}`,
-                {
-                    method: "PATCH",
-                    body: JSON.stringify({ valor_atual: valor })
-                }
-            );
-        }
-
-        await carregarDashboard();
-    } catch (erro) {
-        erroPainel(erro.message);
-    }
-}
-
-function desenharGraficos(dados, receitas, despesas) {
-    if (typeof Chart === "undefined") {
-        erroPainel("Não foi possível carregar a biblioteca de gráficos.");
-        return;
-    }
-
-    if (graficoLinha) graficoLinha.destroy();
-    if (graficoRosca) graficoRosca.destroy();
-
-    const meses = [...new Set(dados.map(d => d.mes))].sort();
-
-    const valores = (tipo) => meses.map(mes =>
-        dados.filter(d => d.mes === mes && d.tipo === tipo)
-            .reduce((soma, d) => soma + Number(d.total), 0)
-    );
-
-    graficoLinha = new Chart(
-        document.getElementById("graficoLinha"),
+  graficoLinha = new Chart($("graficoLinha"), {
+    type:"line",
+    data:{
+      labels:meses,
+      datasets:[
         {
-            type: "line",
-            data: {
-                labels: meses,
-                datasets: [
-                    {
-                        label: "Receitas",
-                        data: valores("receita"),
-                        borderColor: "#21966b",
-                        backgroundColor: "#21966b22",
-                        tension: .35,
-                        fill: true
-                    },
-                    {
-                        label: "Despesas",
-                        data: valores("despesa"),
-                        borderColor: "#db4184",
-                        tension: .35
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false
-            }
-        }
-    );
-
-    graficoRosca = new Chart(
-        document.getElementById("graficoRosca"),
+          label:"Receitas",
+          data:valores("receita"),
+          borderColor:"#20b486",
+          backgroundColor:"#20b48622",
+          tension:.4,
+          fill:true
+        },
         {
-            type: "doughnut",
-            data: {
-                labels: ["Receitas", "Despesas"],
-                datasets: [{
-                    data: [receitas, despesas],
-                    backgroundColor: ["#24a477", "#dc3b8d"]
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false
-            }
+          label:"Despesas",
+          data:valores("despesa"),
+          borderColor:"#d50092",
+          backgroundColor:"#d5009215",
+          tension:.4,
+          fill:true
         }
-    );
+      ]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      plugins:{
+        tooltip:{callbacks:{label:c => `${c.dataset.label}: ${moeda(c.parsed.y)}`}}
+      }
+    }
+  });
+
+  graficoRosca = new Chart($("graficoRosca"), {
+    type:"doughnut",
+    data:{
+      labels:["Receitas","Despesas"],
+      datasets:[{
+        data:[receitas,despesas],
+        backgroundColor:["#20b486","#d50092"],
+        borderWidth:0,
+        hoverOffset:8
+      }]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      cutout:"72%",
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:c => `${c.label}: ${moeda(c.parsed)}`}}
+      }
+    }
+  });
 }

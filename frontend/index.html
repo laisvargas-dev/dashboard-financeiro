@@ -1,153 +1,292 @@
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1.0">
-  <title>Meu Dashboard Financeiro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Meu Financeiro | Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js" defer></script>
   <script src="script.js" defer></script>
 </head>
-<body class="dashboard-page">
+<body class="app-page">
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="#visao">
+        <span class="brand-icon">✦</span>
+        <span>meu<span class="brand-pink">financeiro</span>
+          <small>FINANCE DASHBOARD</small>
+        </span>
+      </a>
 
-  <header class="topo">
-    <div class="marca">
-      <div class="logo">✦</div>
-      <div>
-        <h1>Meu Dashboard Financeiro</h1>
-        <p>Olá, <span id="nomeUsuario">usuário</span>!</p>
+      <div class="side-caption">MENU PRINCIPAL</div>
+
+      <nav class="side-nav">
+        <a href="#visao" class="nav-link active" data-page="visao">
+          <span>▦</span> Visão geral
+        </a>
+        <a href="#transacoes" class="nav-link" data-page="transacoes">
+          <span>⇄</span> Transações
+        </a>
+        <a href="#metas" class="nav-link" data-page="metas">
+          <span>◎</span> Minhas metas
+        </a>
+        <a href="#relatorios" class="nav-link" data-page="relatorios">
+          <span>▥</span> Relatórios
+        </a>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <div class="side-help">
+          <span>✧</span>
+          <strong>Seu futuro começa aqui.</strong>
+          <p>Pequenas escolhas, grandes conquistas.</p>
+        </div>
+        <button id="sair" class="logout">↪ &nbsp; Sair da conta</button>
       </div>
+    </aside>
+
+    <div class="main-wrap">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="mobile-menu icon-button" id="menuToggle" aria-label="Abrir menu">☰</button>
+          <span class="breadcrumb">Páginas <b>/</b> <strong id="breadcrumb">Visão geral</strong></span>
+        </div>
+        <div class="topbar-right">
+          <span class="today" id="dataHoje"></span>
+          <div class="avatar" id="avatar">LV</div>
+        </div>
+      </header>
+
+      <main class="main-content">
+        <div class="page-heading">
+          <div>
+            <div class="eyebrow">SEU ESPAÇO FINANCEIRO ✦</div>
+            <h1 id="tituloPagina">Olá, bem-vinda! <span>✳</span></h1>
+            <p id="subtituloPagina">Aqui está o panorama das suas finanças.</p>
+          </div>
+          <button class="btn primary" id="abrirLancamento">＋ Nova transação</button>
+        </div>
+
+        <div class="notice" id="aviso" role="status" hidden></div>
+
+        <section id="visao" class="page-section active">
+          <div class="filter-row">
+            <div class="section-label">Resumo financeiro <span class="muted">• acompanhe seus números</span></div>
+            <label class="month-filter">
+              ◷ <input id="mesSelecionado" type="month" aria-label="Mês selecionado">
+            </label>
+          </div>
+
+          <div class="stats-grid">
+            <article class="stat-card balance">
+              <div class="stat-top"><span>Saldo total</span><span class="stat-icon">◈</span></div>
+              <div class="stat-number" id="saldo">R$ 0,00</div>
+              <div class="stat-bottom">Seu saldo acumulado</div>
+              <div class="balance-deco"></div>
+            </article>
+
+            <article class="stat-card">
+              <div class="stat-top"><span>Receitas do mês</span><span class="stat-icon green">↗</span></div>
+              <div class="stat-number" id="receitas">R$ 0,00</div>
+              <div class="stat-bottom"><span class="positive">●</span> Total de entradas</div>
+            </article>
+
+            <article class="stat-card">
+              <div class="stat-top"><span>Despesas do mês</span><span class="stat-icon coral">↘</span></div>
+              <div class="stat-number" id="despesas">R$ 0,00</div>
+              <div class="stat-bottom"><span class="negative">●</span> Total de saídas</div>
+            </article>
+
+            <article class="stat-card">
+              <div class="stat-top"><span>Resultado do mês</span><span class="stat-icon violet">◉</span></div>
+              <div class="stat-number" id="lucro">R$ 0,00</div>
+              <div class="stat-bottom">Receitas − despesas</div>
+            </article>
+          </div>
+
+          <div class="charts-grid">
+            <article class="panel">
+              <div class="panel-heading">
+                <div>
+                  <h2>Evolução financeira</h2>
+                  <p>Receitas e despesas ao longo dos meses</p>
+                </div>
+                <span class="mini-pill">Últimos 12 meses</span>
+              </div>
+              <div class="chart-area">
+                <canvas id="graficoLinha"></canvas>
+              </div>
+            </article>
+
+            <article class="panel">
+              <div class="panel-heading">
+                <div>
+                  <h2>Distribuição do mês</h2>
+                  <p>Entradas e saídas no período</p>
+                </div>
+              </div>
+              <div class="chart-area donut">
+                <canvas id="graficoRosca"></canvas>
+              </div>
+              <div class="chart-legend">
+                <span><i class="dot green-bg"></i> Receitas</span>
+                <span><i class="dot pink-bg"></i> Despesas</span>
+              </div>
+            </article>
+          </div>
+
+          <div class="bottom-grid">
+            <article class="panel">
+              <div class="panel-heading">
+                <div>
+                  <h2>Últimas movimentações</h2>
+                  <p>O que aconteceu no mês selecionado</p>
+                </div>
+                <button class="text-btn" data-go="transacoes">Ver todas →</button>
+              </div>
+              <div id="ultimasTransacoes" class="recent-list"></div>
+            </article>
+
+            <article class="panel goal-panel">
+              <div class="panel-heading">
+                <div>
+                  <h2>Minha meta ✨</h2>
+                  <p>Um passo mais perto do seu sonho</p>
+                </div>
+              </div>
+              <div class="goal-illustration">✦ <span>✧</span></div>
+              <h3 id="nomeMetaDestaque">Crie sua primeira meta</h3>
+              <div class="goal-values">
+                <strong id="valorGuardado">R$ 0,00</strong>
+                <span id="valorMeta">de R$ 0,00</span>
+              </div>
+              <div class="progress"><div id="progressoMeta"></div></div>
+              <div class="goal-foot">
+                <span id="percentualMeta">0% concluído</span>
+                <button class="text-btn" data-go="metas">Ver metas →</button>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section id="transacoes" class="page-section">
+          <div class="panel">
+            <div class="panel-heading">
+              <div>
+                <h2>Suas transações</h2>
+                <p>Gerencie todas as movimentações financeiras</p>
+              </div>
+              <button class="btn secondary" id="exportarCsv">↓ Exportar CSV</button>
+            </div>
+            <div class="table-tools">
+              <input id="buscaTransacao" placeholder="⌕ Buscar por descrição...">
+              <select id="filtroTipo">
+                <option value="todos">Todos os tipos</option>
+                <option value="receita">Receitas</option>
+                <option value="despesa">Despesas</option>
+              </select>
+            </div>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Descrição</th>
+                    <th>Tipo</th>
+                    <th>Valor</th>
+                    <th>Data</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="listaTransacoes"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section id="metas" class="page-section">
+          <div class="panel">
+            <div class="panel-heading">
+              <div>
+                <h2>Suas metas financeiras</h2>
+                <p>Planeje e acompanhe suas conquistas</p>
+              </div>
+            </div>
+            <form id="formMeta" class="inline-form">
+              <label>Nome da meta
+                <input id="nomeMeta" maxlength="120" placeholder="Ex.: Meu notebook" required>
+              </label>
+              <label>Valor desejado (R$)
+                <input id="valorAlvo" type="number" min="0.01" step="0.01" required>
+              </label>
+              <label>Prazo (opcional)
+                <input id="prazoMeta" type="date">
+              </label>
+              <button class="btn primary" type="submit">＋ Criar meta</button>
+            </form>
+            <div id="listaMetas" class="goals-grid"></div>
+          </div>
+        </section>
+
+        <section id="relatorios" class="page-section">
+          <div class="panel">
+            <div class="panel-heading">
+              <div>
+                <h2>Relatório financeiro</h2>
+                <p>Resumo das movimentações do mês selecionado</p>
+              </div>
+            </div>
+            <div id="relatorioResumo" class="report-summary"></div>
+            <div class="report-actions">
+              <button id="baixarRelatorio" class="btn primary">↓ Baixar CSV do mês</button>
+              <button id="imprimirRelatorio" class="btn secondary">▤ Imprimir / salvar PDF</button>
+            </div>
+            <p class="muted">Para salvar em PDF, escolha "Salvar como PDF" na janela de impressão.</p>
+          </div>
+        </section>
+      </main>
+
+      <footer class="app-footer">
+        Feito com carinho para sua organização financeira ✦
+      </footer>
     </div>
-    <button id="sair" class="botao-secundario">
-      Sair da conta
-    </button>
-  </header>
+  </div>
 
-  <main class="conteudo">
-    <section class="aviso">
-      <div>
-        <strong>Seu dinheiro, seu controle! 💗</strong>
-        <p>Acompanhe suas finanças em um só lugar.</p>
-      </div>
-      <button id="abrirLancamento">+ Novo lançamento</button>
-    </section>
-
-    <section class="filtros">
-      <h2>Visão geral</h2>
-      <label>
-        Mês:
-        <input type="month" id="mesSelecionado">
-      </label>
-    </section>
-
-    <section class="cards">
-      <article class="card destaque">
-        <span>Saldo total</span>
-        <h2 id="saldo">R$ 0,00</h2>
-        <small>Receitas menos despesas</small>
-      </article>
-      <article class="card">
-        <span>Receitas</span>
-        <h2 id="receitas">R$ 0,00</h2>
-        <small>Entradas registradas</small>
-      </article>
-      <article class="card">
-        <span>Despesas</span>
-        <h2 id="despesas">R$ 0,00</h2>
-        <small>Saídas registradas</small>
-      </article>
-      <article class="card">
-        <span>Lucro do mês</span>
-        <h2 id="lucro">R$ 0,00</h2>
-        <small>Resultado do mês selecionado</small>
-      </article>
-      <article class="card">
-        <span>Meta financeira</span>
-        <h2 id="valorMeta">R$ 0,00</h2>
-        <div class="barra">
-          <div id="progressoMeta"></div>
-        </div>
-        <small id="percentualMeta">Nenhuma meta cadastrada</small>
-      </article>
-    </section>
-
-    <section class="graficos">
-      <article class="painel">
-        <h3>Receitas x Despesas</h3>
-        <div class="area-grafico">
-          <canvas id="graficoLinha"></canvas>
-        </div>
-      </article>
-      <article class="painel">
-        <h3>Distribuição financeira</h3>
-        <div class="area-grafico">
-          <canvas id="graficoRosca"></canvas>
-        </div>
-      </article>
-    </section>
-
-    <section class="painel">
-      <div class="titulo-secao">
-        <h3>Minhas movimentações</h3>
-        <button id="novoLancamento">+ Adicionar</button>
-      </div>
-      <div class="tabela-rolagem">
-        <table>
-          <thead>
-            <tr>
-              <th>Descrição</th>
-              <th>Tipo</th>
-              <th>Valor</th>
-              <th>Data</th>
-              <th>Ação</th>
-            </tr>
-          </thead>
-          <tbody id="listaTransacoes"></tbody>
-        </table>
-      </div>
-    </section>
-
-    <section class="painel">
-      <div class="titulo-secao">
-        <h3>Minhas metas</h3>
-      </div>
-      <form id="formMeta" class="form-inline">
-        <input id="nomeMeta" placeholder="Nome da meta"
-               maxlength="120" required>
-        <input id="valorAlvo" type="number" min="0.01"
-               step="0.01" placeholder="Valor desejado" required>
-        <button type="submit">Criar meta</button>
-      </form>
-      <div id="listaMetas" class="lista-metas"></div>
-    </section>
-    <p id="erroDashboard" role="alert"></p>
-  </main>
-
-  <dialog id="modalLancamento">
+  <dialog id="modalLancamento" class="modal">
     <form id="formTransacao">
-      <h2>Novo lançamento</h2>
+      <div class="modal-heading">
+        <div>
+          <div class="eyebrow">MOVIMENTAÇÃO FINANCEIRA</div>
+          <h2 id="tituloModal">Nova transação</h2>
+        </div>
+        <button type="button" class="close-modal" id="fecharModal">×</button>
+      </div>
+
       <label>Descrição
-        <input id="descricao" maxlength="200" required>
+        <input id="descricao" maxlength="200" placeholder="Ex.: Pagamento de cliente" required>
       </label>
-      <label>Tipo
-        <select id="tipo">
-          <option value="receita">Receita</option>
-          <option value="despesa">Despesa</option>
-        </select>
-      </label>
-      <label>Valor
-        <input id="valor" type="number" min="0.01"
-               step="0.01" required>
-      </label>
+
+      <div class="form-two">
+        <label>Tipo
+          <select id="tipo">
+            <option value="receita">Receita</option>
+            <option value="despesa">Despesa</option>
+          </select>
+        </label>
+        <label>Valor (R$)
+          <input id="valor" type="number" min="0.01" step="0.01" required>
+        </label>
+      </div>
+
       <label>Data
         <input id="dataTransacao" type="date" required>
       </label>
-      <div class="acoes">
-        <button type="button" id="cancelarLancamento"
-                class="botao-secundario">Cancelar</button>
-        <button type="submit">Salvar lançamento</button>
+
+      <div class="modal-actions">
+        <button type="button" class="btn secondary" id="cancelarLancamento">Cancelar</button>
+        <button type="submit" class="btn primary" id="salvarLancamento">Salvar transação</button>
       </div>
     </form>
   </dialog>
