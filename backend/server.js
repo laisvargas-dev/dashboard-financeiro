@@ -8,6 +8,10 @@ const rateLimit = require("express-rate-limit");
 
 const authRoutes = require("./routes/authRoutes");
 
+
+const transacaoRoutes = require("./routes/transacaoRoutes");
+
+
 const app = express();
 
 app.use(helmet());
@@ -32,6 +36,10 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/auth", limiteAuth, authRoutes);
+
+
+app.use("/api/transacoes", transacaoRoutes);
+
 
 const PORT = process.env.PORT || 3000;
 
