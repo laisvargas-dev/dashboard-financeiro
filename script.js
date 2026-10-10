@@ -1,7 +1,7 @@
 
 /* MEU FINANCEIRO - DASHBOARD */
 
-const API = "/api";
+const API = "https://dashboard-financeiro-u3ja.onrender.com/api";
 
 const $ = (id) => document.getElementById(id);
 
