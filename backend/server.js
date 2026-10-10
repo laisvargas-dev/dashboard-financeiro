@@ -12,7 +12,22 @@ const authRoutes = require("./routes/authRoutes");
 const transacaoRoutes = require("./routes/transacaoRoutes");
 
 
+const dashboardRoutes = require("./routes/dashboardRoutes");
+const metaRoutes = require("./routes/metaRoutes");
+
+
+const path = require("path");
+
+
+
 const app = express();
+
+
+app.use(express.static(
+    path.join(__dirname, "../frontend")
+));
+
+
 
 app.use(helmet());
 app.use(cors({
@@ -48,3 +63,7 @@ app.listen(PORT, () => {
         `Servidor rodando em http://localhost:${PORT}`
     );
 });
+
+
+app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/metas", metaRoutes);
