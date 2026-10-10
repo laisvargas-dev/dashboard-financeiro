@@ -1,0 +1,155 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+  <title>Meu Dashboard Financeiro</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js" defer></script>
+  <script src="script.js" defer></script>
+</head>
+<body class="dashboard-page">
+
+  <header class="topo">
+    <div class="marca">
+      <div class="logo">✦</div>
+      <div>
+        <h1>Meu Dashboard Financeiro</h1>
+        <p>Olá, <span id="nomeUsuario">usuário</span>!</p>
+      </div>
+    </div>
+    <button id="sair" class="botao-secundario">
+      Sair da conta
+    </button>
+  </header>
+
+  <main class="conteudo">
+    <section class="aviso">
+      <div>
+        <strong>Seu dinheiro, seu controle! 💗</strong>
+        <p>Acompanhe suas finanças em um só lugar.</p>
+      </div>
+      <button id="abrirLancamento">+ Novo lançamento</button>
+    </section>
+
+    <section class="filtros">
+      <h2>Visão geral</h2>
+      <label>
+        Mês:
+        <input type="month" id="mesSelecionado">
+      </label>
+    </section>
+
+    <section class="cards">
+      <article class="card destaque">
+        <span>Saldo total</span>
+        <h2 id="saldo">R$ 0,00</h2>
+        <small>Receitas menos despesas</small>
+      </article>
+      <article class="card">
+        <span>Receitas</span>
+        <h2 id="receitas">R$ 0,00</h2>
+        <small>Entradas registradas</small>
+      </article>
+      <article class="card">
+        <span>Despesas</span>
+        <h2 id="despesas">R$ 0,00</h2>
+        <small>Saídas registradas</small>
+      </article>
+      <article class="card">
+        <span>Lucro do mês</span>
+        <h2 id="lucro">R$ 0,00</h2>
+        <small>Resultado do mês selecionado</small>
+      </article>
+      <article class="card">
+        <span>Meta financeira</span>
+        <h2 id="valorMeta">R$ 0,00</h2>
+        <div class="barra">
+          <div id="progressoMeta"></div>
+        </div>
+        <small id="percentualMeta">Nenhuma meta cadastrada</small>
+      </article>
+    </section>
+
+    <section class="graficos">
+      <article class="painel">
+        <h3>Receitas x Despesas</h3>
+        <div class="area-grafico">
+          <canvas id="graficoLinha"></canvas>
+        </div>
+      </article>
+      <article class="painel">
+        <h3>Distribuição financeira</h3>
+        <div class="area-grafico">
+          <canvas id="graficoRosca"></canvas>
+        </div>
+      </article>
+    </section>
+
+    <section class="painel">
+      <div class="titulo-secao">
+        <h3>Minhas movimentações</h3>
+        <button id="novoLancamento">+ Adicionar</button>
+      </div>
+      <div class="tabela-rolagem">
+        <table>
+          <thead>
+            <tr>
+              <th>Descrição</th>
+              <th>Tipo</th>
+              <th>Valor</th>
+              <th>Data</th>
+              <th>Ação</th>
+            </tr>
+          </thead>
+          <tbody id="listaTransacoes"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="painel">
+      <div class="titulo-secao">
+        <h3>Minhas metas</h3>
+      </div>
+      <form id="formMeta" class="form-inline">
+        <input id="nomeMeta" placeholder="Nome da meta"
+               maxlength="120" required>
+        <input id="valorAlvo" type="number" min="0.01"
+               step="0.01" placeholder="Valor desejado" required>
+        <button type="submit">Criar meta</button>
+      </form>
+      <div id="listaMetas" class="lista-metas"></div>
+    </section>
+    <p id="erroDashboard" role="alert"></p>
+  </main>
+
+  <dialog id="modalLancamento">
+    <form id="formTransacao">
+      <h2>Novo lançamento</h2>
+      <label>Descrição
+        <input id="descricao" maxlength="200" required>
+      </label>
+      <label>Tipo
+        <select id="tipo">
+          <option value="receita">Receita</option>
+          <option value="despesa">Despesa</option>
+        </select>
+      </label>
+      <label>Valor
+        <input id="valor" type="number" min="0.01"
+               step="0.01" required>
+      </label>
+      <label>Data
+        <input id="dataTransacao" type="date" required>
+      </label>
+      <div class="acoes">
+        <button type="button" id="cancelarLancamento"
+                class="botao-secundario">Cancelar</button>
+        <button type="submit">Salvar lançamento</button>
+      </div>
+    </form>
+  </dialog>
+</body>
+</html>

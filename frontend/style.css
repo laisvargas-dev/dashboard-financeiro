@@ -95,3 +95,301 @@ body {
 [hidden] {
     display: none !important;
 }
+
+
+/* DASHBOARD FINANCEIRO */
+
+.dashboard-page {
+  background: #f8f5fa;
+  color: #302638;
+  min-height: 100vh;
+}
+
+.dashboard-page button {
+  background: #c71585;
+  color: white;
+  border: 0;
+  border-radius: 10px;
+  padding: 12px 18px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.dashboard-page button:hover {
+  opacity: .88;
+}
+
+.dashboard-page .botao-secundario {
+  background: #f4e4ef;
+  color: #9e166e;
+}
+
+.topo {
+  background: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  padding: 24px 5%;
+  border-bottom: 1px solid #f0e5ed;
+}
+
+.marca {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.logo {
+  background: #c71585;
+  color: white;
+  border-radius: 14px;
+  padding: 13px;
+  font-size: 24px;
+}
+
+.topo h1 {
+  font-size: 21px;
+  margin: 0;
+}
+
+.topo p {
+  color: #8c8190;
+  margin: 5px 0 0;
+}
+
+.conteudo {
+  max-width: 1450px;
+  margin: auto;
+  padding: 28px 4%;
+}
+
+.aviso {
+  background: linear-gradient(110deg, #e00092, #ad0b78);
+  color: white;
+  padding: 24px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.aviso p {
+  margin-bottom: 0;
+  opacity: .9;
+}
+
+.aviso button {
+  background: white;
+  color: #b20c7b;
+}
+
+.filtros, .titulo-secao {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin: 22px 0;
+}
+
+.filtros input,
+.form-inline input {
+  padding: 12px;
+  border: 1px solid #e6dbe5;
+  border-radius: 9px;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.card, .painel {
+  background: white;
+  border-radius: 15px;
+  padding: 20px;
+  box-shadow: 0 4px 22px #2b122908;
+  min-width: 0;
+}
+
+.card span {
+  font-size: 13px;
+  color: #7b7080;
+}
+
+.card h2 {
+  font-size: clamp(19px, 2vw, 28px);
+  margin: 15px 0;
+  overflow-wrap: anywhere;
+}
+
+.card small {
+  color: #918797;
+}
+
+.card.destaque {
+  background: linear-gradient(145deg, #d50092, #a50074);
+  color: white;
+}
+
+.card.destaque span,
+.card.destaque small {
+  color: #ffe1f4;
+}
+
+.barra {
+  height: 8px;
+  background: #f4d9e9;
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 12px 0;
+}
+
+#progressoMeta {
+  height: 100%;
+  width: 0;
+  background: #cf168d;
+  transition: width .3s;
+}
+
+.graficos {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 18px;
+  margin: 22px 0;
+}
+
+.painel {
+  margin-bottom: 20px;
+}
+
+.painel h3 {
+  margin-top: 0;
+}
+
+.area-grafico {
+  position: relative;
+  height: 300px;
+}
+
+.tabela-rolagem {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+th, td {
+  padding: 15px 10px;
+  border-bottom: 1px solid #f1e8ef;
+}
+
+th {
+  color: #807483;
+  font-size: 13px;
+}
+
+.receita {
+  color: #18875b;
+  font-weight: 700;
+}
+
+.despesa {
+  color: #d43e64;
+  font-weight: 700;
+}
+
+.form-inline {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.lista-metas {
+  display: grid;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.meta-item {
+  border: 1px solid #f0e4ee;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.meta-item p {
+  color: #7b7080;
+}
+
+.acoes {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+#modalLancamento {
+  border: none;
+  border-radius: 20px;
+  padding: 28px;
+  width: min(440px, 92vw);
+  box-shadow: 0 20px 60px #24102535;
+}
+
+#modalLancamento::backdrop {
+  background: #180a1d99;
+}
+
+#modalLancamento label {
+  display: block;
+  margin: 14px 0;
+  font-weight: 600;
+}
+
+#modalLancamento input,
+#modalLancamento select {
+  width: 100%;
+  padding: 12px;
+  margin-top: 6px;
+  border: 1px solid #eadce8;
+  border-radius: 9px;
+}
+
+#erroDashboard {
+  color: #bb245a;
+}
+
+@media (max-width: 1100px) {
+  .cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 750px) {
+  .topo, .aviso, .filtros {
+    flex-wrap: wrap;
+  }
+
+  .cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .graficos {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 450px) {
+  .cards {
+    grid-template-columns: 1fr;
+  }
+
+  .topo h1 {
+    font-size: 17px;
+  }
+}
