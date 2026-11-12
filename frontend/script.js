@@ -7,6 +7,12 @@ const API = "https://dashboard-financeiro-u3ja.onrender.com/api";
 
 const $ = (id) => document.getElementById(id);
 
+function validarEmail(email) {
+  const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+  return regex.test(email.trim());
+}
+
 const dinheiro = (valor) =>
   new Intl.NumberFormat("pt-BR", {
     style: "currency",
@@ -164,6 +170,14 @@ if ($("loginForm")) {
 
   login.addEventListener("submit", async (event) => {
     event.preventDefault();
+
+    const email = $("email").value.trim();
+
+    if (!validarEmail(email)) {
+      informar("Digite um e-mail válido. Exemplo: nome@gmail.com");
+      $("email").focus();
+      return;
+    }
 
     const botao = login.querySelector(
       '[type="submit"]'
