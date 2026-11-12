@@ -1,6 +1,6 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +8,9 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&family=Great+Vibes&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&family=Great+Vibes&display=swap"
+    rel="stylesheet">
 
   <link rel="stylesheet" href="style.css">
   <script src="script.js" defer></script>
@@ -69,34 +71,16 @@
           Seu espaço para cuidar do que importa.
         </p>
 
-        <div id="mensagem" class="login-message"
-             role="status" hidden></div>
+        <div id="mensagem" class="login-message" role="status" hidden></div>
 
         <form id="loginForm">
           <label for="email">E-mail</label>
-          <input
-            id="email"
-            type="email"
-            autocomplete="email"
-            placeholder="seuemail@exemplo.com"
-            required
-          >
+          <input id="email" type="email" autocomplete="email" placeholder="seuemail@exemplo.com" required>
 
           <label for="senha">Senha</label>
           <div class="password-wrap">
-            <input
-              id="senha"
-              type="password"
-              autocomplete="current-password"
-              placeholder="Digite sua senha"
-              required
-            >
-            <button
-              type="button"
-              class="toggle-password"
-              data-target="senha"
-              aria-label="Mostrar senha"
-            >◉</button>
+            <input id="senha" type="password" autocomplete="current-password" placeholder="Digite sua senha" required>
+            <button type="button" class="toggle-password" data-target="senha" aria-label="Mostrar senha">◉</button>
           </div>
 
           <button type="submit" class="btn primary login-submit">
@@ -111,38 +95,19 @@
 
         <form id="cadastroForm" hidden>
           <label for="nomeCadastro">Nome completo</label>
-          <input
-            id="nomeCadastro"
-            placeholder="Seu nome"
-            autocomplete="name"
-            required
-          >
+          <input id="nomeCadastro" placeholder="Seu nome" autocomplete="name" required>
 
           <label for="emailCadastro">E-mail</label>
-          <input
-            id="emailCadastro"
-            type="email"
-            autocomplete="email"
-            placeholder="seuemail@exemplo.com"
-            required
-          >
+          <input id="emailCadastro" type="email" autocomplete="email" placeholder="seuemail@exemplo.com"
+            pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+            title="Digite um e-mail válido. Exemplo: nome@gmail.com" required>
 
           <label for="senhaCadastro">Senha</label>
           <div class="password-wrap">
-            <input
-              id="senhaCadastro"
-              type="password"
-              minlength="6"
-              autocomplete="new-password"
-              placeholder="Crie sua senha"
-              required
-            >
-            <button
-              type="button"
-              class="toggle-password"
-              data-target="senhaCadastro"
-              aria-label="Mostrar senha"
-            >◉</button>
+            <input id="senhaCadastro" type="password" minlength="6" autocomplete="new-password"
+              placeholder="Crie sua senha" required>
+            <button type="button" class="toggle-password" data-target="senhaCadastro"
+              aria-label="Mostrar senha">◉</button>
           </div>
 
           <button type="submit" class="btn primary login-submit">
@@ -166,4 +131,5 @@
     </section>
   </main>
 </body>
+
 </html>
